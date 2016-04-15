@@ -15,7 +15,7 @@ var (
 	ErrNoTTSContentProvided = errors.New("No content given to TTS engine")
 )
 
-// TTSEngine is the data returned by TTSEngines
+// TTSEngine is the data returned by TTSEngines. TODO: Need example output.
 type TTSEngine struct {
 }
 
