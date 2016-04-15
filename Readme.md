@@ -16,5 +16,11 @@ typechecked, multithreaded pseudo-apps. Using the additional extension Termux:Wi
 these could then be even given desktop icons and used like other apps, albeit
 with a dependency on Termux, Termux:API and Termux:Widget.
 
+go-termux reimplements the C tool and wrapper scripts from `termux-api` so that,
+in theory, you won't even need to install `termux-api` to use the Termux:API app.
+In fact, I'm not even certain you'll need Termux to take advantage of Termux:API,
+though Termux appears to have permissions to open Unix ports that aren't available
+to the normal adb shell.
+
 [godoc]: https://godoc.org/github.com/cathalgarvey/go-termux "GoDoc"
 [godoc-badge]: https://godoc.org/github.com/cathalgarvey/go-termux?status.svg "GoDoc Badge"
