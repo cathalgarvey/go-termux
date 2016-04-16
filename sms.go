@@ -15,6 +15,10 @@ var (
 // SMS is an SMS message from SmsInbox
 // TODO need struct format, this API doesn't work when one uses SMSSecure :)
 type SMS struct {
+	Read     bool
+	Number   string
+	Received string // YYYY-MM-DD HH:MM
+	Body     string
 }
 
 // SMSSend sends an SMS
@@ -22,7 +26,7 @@ func SMSSend(content, number string) error {
 	if number == "" {
 		return ErrNoRecipientNumber
 	}
-	_, err := toolExec(bytes.NewBuffer([]byte(content)), "SmsInbox", "--es", "recipient", number)
+	_, err := toolExec(bytes.NewBuffer([]byte(content)), "SmsSend", "--es", "recipient", number)
 	return err
 }
 

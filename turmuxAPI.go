@@ -33,7 +33,7 @@ var (
 
 // execAMBroadcast is a rewrite of exec_am_broadcast from:
 // https://github.com/termux/termux-packages/blob/master/packages/termux-api/termux-api.c#L27
-func execAMBroadcast(inputAddress, outputAddress string, argv ...string) error {
+func execAMBroadcast(inputAddress, outputAddress string, tool string, argv ...string) error {
 	logdebug("In execAMBroadcast, prepping call", ctx{"inputAddress": inputAddress, "outputAddress": outputAddress, "argv": argv})
 	bc := am.Broadcast(
 		&am.Opts{
@@ -47,9 +47,9 @@ func execAMBroadcast(inputAddress, outputAddress string, argv ...string) error {
 			ExtraKeyStrings: map[string]string{
 				"socket_input":  outputAddress,
 				"socket_output": inputAddress,
-				"api_method":    argv[0],
+				"api_method":    tool,
 			},
-		})
+		}, argv...)
 	logdebug("In execAMBroadcast, executing and awaiting finish", ctx{"inputAddress": inputAddress, "outputAddress": outputAddress, "argv": argv})
 	op, err := bc.Output()
 	logdebug("In execAMBroadcast, command output received", ctx{"output": string(op), "error": err})
@@ -60,9 +60,10 @@ func generateUUID() string {
 	return uuid.NewV4().String()
 }
 
-func transmitStdinToSocket(echan chan error, stdin io.Reader, unixSocket *net.UnixAddr) {
-	logdebug("transmitStdinToSocket start: ListenUnix")
-	outputClientSocket, err := net.ListenUnix("unix", unixSocket)
+func transmitStdinToSocket(wg *sync.WaitGroup, echan chan error, stdin io.Reader, unixSocket *net.UnixAddr) {
+	defer wg.Done()
+	logdebug("transmitStdinToSocket: start", ctx{"socketName": unixSocket.Name})
+	outputClientSocket, err := net.Listen("unix", unixSocket.Name)
 	if err != nil {
 		logerror("Error in socket thread", ctx{"function": "transmitStdinToSocket", "error": err.Error()})
 		echan <- err
@@ -76,12 +77,13 @@ func transmitStdinToSocket(echan chan error, stdin io.Reader, unixSocket *net.Un
 		return
 	}
 	logdebug("transmitStdinToSocket: copying stdin to conn")
-	_, err = io.Copy(conn, stdin)
+	copiedbytes, err := io.Copy(conn, stdin)
 	if err != nil {
 		logerror("Error in socket thread", ctx{"function": "transmitStdinToSocket", "error": err.Error()})
 		echan <- err
 		return
 	}
+	logdebug("transmitStdinToSocket: copied successfully.", ctx{"copiedbytes": copiedbytes})
 	logdebug("transmitSocketToStdout: closing conn")
 	err = conn.Close()
 	if err != nil {
@@ -95,7 +97,6 @@ func transmitStdinToSocket(echan chan error, stdin io.Reader, unixSocket *net.Un
 func transmitSocketToStdout(wg *sync.WaitGroup, echan chan error, stdout io.Writer, unixSocket *net.UnixAddr) {
 	defer wg.Done()
 	logdebug("transmitSocketToStdout: start", ctx{"socketName": unixSocket.Name})
-	//inputClientSocket, err := net.ListenUnix("unix", unixSocket)
 	inputClientSocket, err := net.Listen("unix", unixSocket.Name)
 	if err != nil {
 		logerror("Error in socket thread", ctx{"function": "transmitSocketToStdout", "error": err.Error()})
@@ -135,7 +136,7 @@ func toolExec(stdin io.Reader, tool string, toolargs ...string) ([]byte, error) 
 	inputSocket := net.UnixAddr{Name: "@" + inputAddress, Net: "unix"}
 	outputSocket := net.UnixAddr{Name: "@" + outputAddress, Net: "unix"}
 	wg := new(sync.WaitGroup)
-	wg.Add(2)
+	wg.Add(3)
 	var errs []error
 	ech := make(chan error, 3) // Capacity for up to three errs, should be all it needs.
 	loginfo("Starting broadcast goroutine", ctx{
@@ -145,7 +146,7 @@ func toolExec(stdin io.Reader, tool string, toolargs ...string) ([]byte, error) 
 	// Pitch off three goroutines and wait.
 	go func(wg *sync.WaitGroup, errchan chan error) {
 		defer wg.Done()
-		err := execAMBroadcast(inputAddress, outputAddress, append([]string{tool}, toolargs...)...)
+		err := execAMBroadcast(inputAddress, outputAddress, tool, toolargs...)
 		if err != nil {
 			logerror("Error in broadcast goroutine", ctx{"error": err})
 			errchan <- err
@@ -153,7 +154,7 @@ func toolExec(stdin io.Reader, tool string, toolargs ...string) ([]byte, error) 
 		}
 		loginfo("Finished broadcast goroutine without error")
 	}(wg, ech)
-	go transmitStdinToSocket(ech, stdin, &outputSocket) // Post stdin from this process to socket
+	go transmitStdinToSocket(wg, ech, stdin, &outputSocket) // Post stdin from this process to socket
 	// TODO: If either of the above fail, will this one wait forever?
 	// Should it use a select statement and a timeout?
 	go transmitSocketToStdout(wg, ech, stdoutBuf, &inputSocket) // Read from socket to this process' stdout

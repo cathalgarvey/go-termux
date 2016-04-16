@@ -18,7 +18,7 @@ func logdebug(m string, p ...ctx) {
 
 // Info is a shim for Log15, so that a build tag can be used to enable or
 // disable logging at build-time.
-func loginfo(m string, p ctx) {
+func loginfo(m string, p ...ctx) {
 	if len(p) > 0 {
 		log15.Info(m, log15.Ctx(p[0]))
 	} else {
@@ -28,7 +28,7 @@ func loginfo(m string, p ctx) {
 
 // Error is a shim for Log15, so that a build tag can be used to enable or
 // disable logging at build-time.
-func logerror(m string, p ctx) {
+func logerror(m string, p ...ctx) {
 	if len(p) > 0 {
 		log15.Error(m, log15.Ctx(p[0]))
 	} else {
