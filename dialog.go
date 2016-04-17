@@ -1,7 +1,5 @@
 package termux
 
-import "bytes"
-
 // Dialog displays an input dialog and returns the input data.
 func Dialog(title, hint string, multiline, passwordInput bool) (string, error) {
 	var args []string
@@ -17,6 +15,6 @@ func Dialog(title, hint string, multiline, passwordInput bool) (string, error) {
 	if passwordInput {
 		args = append(args, []string{"--es", "input_type", "password"}...)
 	}
-	conbytes, err := toolExec(bytes.NewBuffer(nil), "Dialog", args...)
+	conbytes, err := toolExec(nil, "Dialog", args...)
 	return string(conbytes), err
 }

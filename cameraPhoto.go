@@ -1,9 +1,6 @@
 package termux
 
-import (
-	"bytes"
-	"errors"
-)
+import "errors"
 
 var (
 	// ErrNoCameraSpecified is returned if cameraID is blank.
@@ -26,6 +23,6 @@ func CameraPhoto(cameraID, outputFN, size string) error {
 	if size != "" {
 		args = append(args, []string{"--ei", "size_index", size}...)
 	}
-	_, err := toolExec(bytes.NewBuffer(nil), "CameraInfo", args...)
+	_, err := toolExec(nil, "CameraInfo", args...)
 	return err
 }

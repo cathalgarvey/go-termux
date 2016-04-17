@@ -1,9 +1,6 @@
 package termux
 
-import (
-	"bytes"
-	"errors"
-)
+import "errors"
 
 var (
 	// ErrNoNotificationArgsProvided is returned if neither title or content is given
@@ -28,6 +25,6 @@ func Notification(title, content, id, uri string) error {
 	if uri != "" {
 		args = append(args, []string{"--es", "url", uri}...)
 	}
-	_, err := toolExec(bytes.NewBuffer(nil), "Notification", args...)
+	_, err := toolExec(nil, "Notification", args...)
 	return err
 }

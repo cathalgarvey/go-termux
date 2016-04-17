@@ -1,7 +1,6 @@
 package termux
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 )
@@ -42,7 +41,7 @@ func Location(request, provider string) (*LocationResponse, error) {
 	)
 	args = append(args, []string{"--es", "request", request}...)
 	args = append(args, []string{"--es", "provider", provider}...)
-	locBytes, err := toolExec(bytes.NewBuffer(nil), "Location", args...)
+	locBytes, err := toolExec(nil, "Location", args...)
 	if err != nil {
 		return nil, err
 	}

@@ -1,9 +1,6 @@
 package termux
 
-import (
-	"bytes"
-	"encoding/json"
-)
+import "encoding/json"
 
 // Contact is the stripped down data returned by termux-contact-list
 type Contact struct {
@@ -15,7 +12,7 @@ type Contact struct {
 // only the name and a phone number.
 func ContactList() ([]Contact, error) {
 	var cons []Contact
-	conbytes, err := toolExec(bytes.NewBuffer(nil), "ContactList")
+	conbytes, err := toolExec(nil, "ContactList")
 	if err != nil {
 		return nil, err
 	}

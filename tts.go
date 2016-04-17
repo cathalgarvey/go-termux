@@ -22,7 +22,7 @@ type TTSEngine struct {
 // TTSEngines returns the list of available TTS engines
 func TTSEngines() ([]TTSEngine, error) {
 	var resp []TTSEngine
-	respBytes, err := toolExec(bytes.NewBuffer(nil), "TextToSpeech", "--es", "engine", "LIST_AVAILABLE")
+	respBytes, err := toolExec(nil, "TextToSpeech", "--es", "engine", "LIST_AVAILABLE")
 	if err != nil {
 		return nil, err
 	}

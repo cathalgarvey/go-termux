@@ -136,7 +136,7 @@ func toolExec(stdin io.Reader, tool string, toolargs ...string) ([]byte, error) 
 	inputSocket := net.UnixAddr{Name: "@" + inputAddress, Net: "unix"}
 	outputSocket := net.UnixAddr{Name: "@" + outputAddress, Net: "unix"}
 	wg := new(sync.WaitGroup)
-	wg.Add(3)
+	wg.Add(2)
 	var errs []error
 	ech := make(chan error, 3) // Capacity for up to three errs, should be all it needs.
 	loginfo("Starting broadcast goroutine", ctx{
@@ -154,7 +154,10 @@ func toolExec(stdin io.Reader, tool string, toolargs ...string) ([]byte, error) 
 		}
 		loginfo("Finished broadcast goroutine without error")
 	}(wg, ech)
-	go transmitStdinToSocket(wg, ech, stdin, &outputSocket) // Post stdin from this process to socket
+	if stdin != nil {
+		wg.Add(1)
+		go transmitStdinToSocket(wg, ech, stdin, &outputSocket) // Post stdin from this process to socket
+	}
 	// TODO: If either of the above fail, will this one wait forever?
 	// Should it use a select statement and a timeout?
 	go transmitSocketToStdout(wg, ech, stdoutBuf, &inputSocket) // Read from socket to this process' stdout

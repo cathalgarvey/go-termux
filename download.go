@@ -1,9 +1,6 @@
 package termux
 
-import (
-	"bytes"
-	"errors"
-)
+import "errors"
 
 var (
 	// ErrNoURLSpecified is returned if URL=="" in Download
@@ -24,6 +21,6 @@ func Download(URL, title, description string) error {
 		args = append(args, []string{"--es", "description", description}...)
 	}
 	args = append(args, URL)
-	_, err := toolExec(bytes.NewBuffer(nil), "Download", args...)
+	_, err := toolExec(nil, "Download", args...)
 	return err
 }

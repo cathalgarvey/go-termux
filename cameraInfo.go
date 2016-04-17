@@ -1,9 +1,6 @@
 package termux
 
-import (
-	"bytes"
-	"encoding/json"
-)
+import "encoding/json"
 
 // CameraInfoResponse contains information on one camera.
 type CameraInfoResponse struct {
@@ -25,7 +22,7 @@ type CameraInfoResponse struct {
 // CameraInfo returns information on cameras in this device.
 func CameraInfo() ([]CameraInfoResponse, error) {
 	var resp []CameraInfoResponse
-	ciBytes, err := toolExec(bytes.NewBuffer(nil), "CameraInfo")
+	ciBytes, err := toolExec(nil, "CameraInfo")
 	if err != nil {
 		return nil, err
 	}

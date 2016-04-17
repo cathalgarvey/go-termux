@@ -1,9 +1,6 @@
 package termux
 
-import (
-	"bytes"
-	"encoding/json"
-)
+import "encoding/json"
 
 // BatteryStatusResponse is returned by the BatteryStatus function.
 type BatteryStatusResponse struct {
@@ -17,7 +14,7 @@ type BatteryStatusResponse struct {
 // BatteryStatus mimics the termux-battery-status script/call.
 func BatteryStatus() (*BatteryStatusResponse, error) {
 	var resp BatteryStatusResponse
-	bsrBytes, err := toolExec(bytes.NewBuffer(nil), "BatteryStatus")
+	bsrBytes, err := toolExec(nil, "BatteryStatus")
 	if err != nil {
 		return nil, err
 	}
