@@ -13,8 +13,12 @@ type BatteryStatusResponse struct {
 
 // BatteryStatus mimics the termux-battery-status script/call.
 func BatteryStatus() (*BatteryStatusResponse, error) {
+	return batteryStatus(toolExec)
+}
+
+func batteryStatus(execF toolExecFunc) (*BatteryStatusResponse, error) {
 	var resp BatteryStatusResponse
-	bsrBytes, err := toolExec(nil, "BatteryStatus")
+	bsrBytes, err := execF(nil, "BatteryStatus")
 	if err != nil {
 		return nil, err
 	}

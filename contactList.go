@@ -11,8 +11,12 @@ type Contact struct {
 // ContactList returns a list of Contacts. These appear to be stripped down to
 // only the name and a phone number.
 func ContactList() ([]Contact, error) {
+	return contactList(toolExec)
+}
+
+func contactList(execF toolExecFunc) ([]Contact, error) {
 	var cons []Contact
-	conbytes, err := toolExec(nil, "ContactList")
+	conbytes, err := execF(nil, "ContactList")
 	if err != nil {
 		return nil, err
 	}

@@ -16,13 +16,17 @@ var (
 )
 
 // TTSEngine is the data returned by TTSEngines. TODO: Need example output.
-type TTSEngine struct {
-}
+type TTSEngine map[string]interface{}
 
 // TTSEngines returns the list of available TTS engines
 func TTSEngines() ([]TTSEngine, error) {
+	return ttsEngines(toolExec)
+}
+
+// TTSEngines returns the list of available TTS engines
+func ttsEngines(execF toolExecFunc) ([]TTSEngine, error) {
 	var resp []TTSEngine
-	respBytes, err := toolExec(nil, "TextToSpeech", "--es", "engine", "LIST_AVAILABLE")
+	respBytes, err := execF(nil, "TextToSpeech", "--es", "engine", "LIST_AVAILABLE")
 	if err != nil {
 		return nil, err
 	}
@@ -32,6 +36,10 @@ func TTSEngines() ([]TTSEngine, error) {
 
 // TTSSpeak speaks the provided content.
 func TTSSpeak(content, engine, language string, pitch, rate float64) error {
+	return ttsSpeak(toolExec, content, engine, language, pitch, rate)
+}
+
+func ttsSpeak(execF toolExecFunc, content, engine, language string, pitch, rate float64) error {
 	var args []string
 	if engine == "" {
 		return ErrNoTTSEngineProvided
@@ -49,6 +57,6 @@ func TTSSpeak(content, engine, language string, pitch, rate float64) error {
 	if rate > 0.001 {
 		args = append(args, []string{"--ef", "rate", strconv.FormatFloat(rate, 'f', -1, 32)}...)
 	}
-	_, err := toolExec(bytes.NewBuffer([]byte(content)), "TextToSpeech", args...)
+	_, err := execF(bytes.NewBuffer([]byte(content)), "TextToSpeech", args...)
 	return err
 }

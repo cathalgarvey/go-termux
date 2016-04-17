@@ -30,6 +30,10 @@ type LocationResponse struct {
 
 // Location makes a request for location information
 func Location(request, provider string) (*LocationResponse, error) {
+	return location(toolExec, request, provider)
+}
+
+func location(execF toolExecFunc, request, provider string) (*LocationResponse, error) {
 	err := validateLocationArgs(request, provider)
 	if err != nil {
 		return nil, err
@@ -41,7 +45,7 @@ func Location(request, provider string) (*LocationResponse, error) {
 	)
 	args = append(args, []string{"--es", "request", request}...)
 	args = append(args, []string{"--es", "provider", provider}...)
-	locBytes, err := toolExec(nil, "Location", args...)
+	locBytes, err := execF(nil, "Location", args...)
 	if err != nil {
 		return nil, err
 	}

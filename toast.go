@@ -4,6 +4,10 @@ import "bytes"
 
 // Toast displays toast.
 func Toast(content string, short bool) error {
+	return toast(toolExec, content, short)
+}
+
+func toast(execF toolExecFunc, content string, short bool) error {
 	var args []string
 	if short {
 		args = append(args, []string{"--ez", "short", "true"}...)

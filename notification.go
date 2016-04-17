@@ -9,6 +9,10 @@ var (
 
 // Notification posts a notification to the system tray
 func Notification(title, content, id, uri string) error {
+	return notification(toolExec, title, content, id, uri)
+}
+
+func notification(execF toolExecFunc, title, content, id, uri string) error {
 	var args []string
 	if title == "" && content == "" {
 		return ErrNoNotificationArgsProvided
@@ -25,6 +29,6 @@ func Notification(title, content, id, uri string) error {
 	if uri != "" {
 		args = append(args, []string{"--es", "url", uri}...)
 	}
-	_, err := toolExec(nil, "Notification", args...)
+	_, err := execF(nil, "Notification", args...)
 	return err
 }

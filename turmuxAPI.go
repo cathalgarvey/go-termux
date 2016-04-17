@@ -127,6 +127,10 @@ func transmitSocketToStdout(wg *sync.WaitGroup, echan chan error, stdout io.Writ
 	logdebug("transmitSocketToStdout: finished")
 }
 
+// toolExecFunc represents the interface all of the other tools construct args
+// for and pass-through. It's interfaced here to allow for testing.
+type toolExecFunc func(stdin io.Reader, tool string, toolargs ...string) ([]byte, error)
+
 // Represents main() from the Termux-api C code.
 func toolExec(stdin io.Reader, tool string, toolargs ...string) ([]byte, error) {
 	// Prep bits

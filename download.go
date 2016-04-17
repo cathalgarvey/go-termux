@@ -10,6 +10,10 @@ var (
 // Download issues a download using the system download manager; i.e. with a
 // title and description in the status bar.
 func Download(URL, title, description string) error {
+	return download(toolExec, URL, title, description)
+}
+
+func download(execF toolExecFunc, URL, title, description string) error {
 	var args []string
 	if URL == "" {
 		return ErrNoURLSpecified
@@ -21,6 +25,6 @@ func Download(URL, title, description string) error {
 		args = append(args, []string{"--es", "description", description}...)
 	}
 	args = append(args, URL)
-	_, err := toolExec(nil, "Download", args...)
+	_, err := execF(nil, "Download", args...)
 	return err
 }

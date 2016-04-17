@@ -14,7 +14,6 @@ var (
 )
 
 // SMS is an SMS message from SmsInbox
-// TODO need struct format, this API doesn't work when one uses SMSSecure :)
 type SMS struct {
 	Read     bool
 	Sender   string // Presumably only if contact is present
@@ -25,10 +24,14 @@ type SMS struct {
 
 // SMSSend sends an SMS
 func SMSSend(content, number string) error {
+	return smsSend(toolExec, content, number)
+}
+
+func smsSend(execF toolExecFunc, content, number string) error {
 	if number == "" {
 		return ErrNoRecipientNumber
 	}
-	_, err := toolExec(bytes.NewBuffer([]byte(content)), "SmsSend", "--es", "recipient", number)
+	_, err := execF(bytes.NewBuffer([]byte(content)), "SmsSend", "--es", "recipient", number)
 	return err
 }
 
@@ -38,6 +41,10 @@ func SMSSend(content, number string) error {
 // Offset is how many to skip back from most recent before counting out <Limit> smses.
 // ShowDates and ShowPhoneNumbers appear to be the default anyway, so have been elided.
 func SMSInbox(limit, offset int) ([]SMS, error) {
+	return smsInbox(toolExec, limit, offset)
+}
+
+func smsInbox(execF toolExecFunc, limit, offset int) ([]SMS, error) {
 	var (
 		resp []SMS
 		args []string
@@ -50,7 +57,7 @@ func SMSInbox(limit, offset int) ([]SMS, error) {
 	if limit != 0 {
 		args = append(args, []string{"--ei", "limit", strconv.Itoa(limit)}...)
 	}
-	bytesResp, err := toolExec(nil, "SmsInbox", args...)
+	bytesResp, err := execF(nil, "SmsInbox", args...)
 	if err != nil {
 		return nil, err
 	}
