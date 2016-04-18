@@ -17,11 +17,11 @@ import (
 	"errors"
 	"io"
 	"net"
+	"os"
 	"strings"
 	"sync"
 
 	am "github.com/cathalgarvey/androidam"
-	"github.com/twinj/uuid"
 )
 
 // toolExecFunc represents the interface all of the other tools construct args
@@ -41,30 +41,34 @@ var (
 // Rewrite of exec_am_broadcast from:
 // https://github.com/termux/termux-packages/blob/master/packages/termux-api/termux-api.c#L27
 func execAMBroadcast(inputAddress, outputAddress string, tool string, argv ...string) error {
+	outputAddress = strings.Trim(outputAddress, "@")
+	inputAddress = strings.Trim(inputAddress, "@")
 	logdebug("In execAMBroadcast, prepping call", ctx{"inputAddress": inputAddress, "outputAddress": outputAddress, "argv": argv})
 	bc := am.Broadcast(
-		&am.Opts{
-			AMPath: "/data/data/com.termux/files/usr/bin/am",
-		},
+		nil,
 		&am.BroadcastArgs{
 			User: am.GetCurrentAndroidUserID(),
 		},
 		&am.IntentArgs{
 			Component: "com.termux.api/.TermuxApiReceiver",
 			ExtraKeyStrings: map[string]string{
-				"socket_input":  strings.Trim(outputAddress, "@"),
-				"socket_output": strings.Trim(inputAddress, "@"),
+				"socket_input":  outputAddress,
+				"socket_output": inputAddress,
 				"api_method":    tool,
 			},
 		}, argv...)
+	logdebug("Setting custom envvars to emulate Termux am wrapper script")
+	// This block emulates the wrapper around `am` that's normally
+	// used by termux.
+	abiList, _ := am.Getprop("ro.product.cpu.abilist64")
+	ldLibPath := "/system/lib" + abiList
+	pathlessEnv := pathlessEnv()
+	pathPlus := os.Getenv("PATH") + ":/system/bin"
+	bc.Env = append(pathlessEnv, "LD_LIBRARY_PATH="+ldLibPath, "PATH="+pathPlus)
 	logdebug("In execAMBroadcast, executing and awaiting finish", ctx{"inputAddress": inputAddress, "outputAddress": outputAddress, "argv": argv})
 	op, err := bc.Output()
 	logdebug("In execAMBroadcast, command output received", ctx{"output": string(op), "error": err})
 	return err
-}
-
-func getUnixSocket() net.UnixAddr {
-	return net.UnixAddr{Name: "@" + uuid.NewV4().String(), Net: "unix"}
 }
 
 // goroutine that transmits input buffer to a unix socket.
@@ -120,19 +124,6 @@ func transmitSocketToStdout(wg *sync.WaitGroup, ecbL func(error) bool, stdout io
 	logdebug("transmitSocketToStdout: finished")
 }
 
-// Create a callback that checks errors and returns bool, but also appends
-// errors to a slice if they are non-nil.
-func makeErrCallback(funcName string, errSlice []error) func(error) bool {
-	return func(err error) bool {
-		if err != nil {
-			logerror("Error in socket thread", ctx{"function": funcName, "error": err.Error()})
-			errSlice = append(errSlice, err)
-			return true
-		}
-		return false
-	}
-}
-
 // Represents main() from the Termux-api C code.
 // TODO: Needs serious clean-up.
 func toolExec(stdin io.Reader, tool string, toolargs ...string) ([]byte, error) {
@@ -142,7 +133,7 @@ func toolExec(stdin io.Reader, tool string, toolargs ...string) ([]byte, error) 
 	outputSocket := getUnixSocket() //net.UnixAddr{Name: "@" + outputAddress, Net: "unix"}
 	var errs []error
 	// Pitch off goroutines and wait.
-	// Can this be a blocking call?
+	// Can this be a blocking call? Await proper test suite.
 	// err := execAMBroadcast(inputSocket.Name, outputSocket.Name, tool, toolargs...)
 	wg.Add(1)
 	go func(wg *sync.WaitGroup, errcb func(error) bool) {

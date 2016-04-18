@@ -2,6 +2,7 @@ package termux
 
 import (
 	"os/exec"
+	"strings"
 	"time"
 )
 
@@ -13,5 +14,5 @@ func Curtime() (time.Time, error) {
 	if err != nil {
 		return time.Time{}, err
 	}
-	return time.Parse(time.UnixDate, string(dateOutput))
+	return time.Parse(time.UnixDate, strings.TrimSpace(string(dateOutput)))
 }
