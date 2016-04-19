@@ -3,16 +3,7 @@ package termux
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"strconv"
-)
-
-var (
-	// ErrNoTTSEngineProvided is returned if there's no engine specified
-	ErrNoTTSEngineProvided = errors.New("No engine specified for TTS")
-
-	// ErrNoTTSContentProvided is returned if no content is given to speak
-	ErrNoTTSContentProvided = errors.New("No content given to TTS engine")
 )
 
 // TTSEngine is the data returned by TTSEngines. TODO: Need example output.

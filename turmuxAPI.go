@@ -4,17 +4,23 @@ It attempts to reimplement and replace the C code from termux-api, and to provid
 a clean functional interface to all the api script wrappers, so that development
 of functional termux "apps" can be as easy as:
 
-1. Install Termux
-2. Install Termux:API (just the app: no need to install termux-api!)
-3. Write and test your go app from Termux shell (possibly even compiling from Termux!)
-4. Optional: Use Termux:Widget to create Android desktop shortcuts for your new
-   termux/Go "app"
+		1. Install Termux
+		2. Install Termux:API (just the app: no need to install termux-api!)
+		3. Write and test your go app from Termux shell (possibly even compiling from Termux!)
+		4. Optional: Use Termux:Widget to create Android desktop shortcuts for your new termux/Go "app"
+
+At present, applications written using this framework appear to only function in
+Termux shell, not in the ADB shell or system shell. It's possible this is because
+Termux:API is unable to connect to unix ports outside of Termux's sandbox, I'm
+not sure. Hopefully this can be fixed so that go-termux can be used for general
+phone automation. Still more hopefully, perhaps Termux itself would prove unnecessary
+and only Termux:API would be required in this case?
+
 */
 package termux
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"net"
 	"os"
@@ -27,14 +33,6 @@ import (
 // toolExecFunc represents the interface all of the other tools construct args
 // for and pass-through. It's interfaced here to allow for testing.
 type toolExecFunc func(stdin io.Reader, tool string, toolargs ...string) ([]byte, error)
-
-var (
-	// ErrZeroLengthResponse is returned if the response is (unexpectedly) zero in length
-	ErrZeroLengthResponse = errors.New("Zero length response received")
-
-	// ErrNoOutputFile is returned if an output filename is expected
-	ErrNoOutputFile = errors.New("Must provide an output filename")
-)
 
 // Sends an intent broadcast for the target tool, providing arguments and
 // input/output sockets for the API server.

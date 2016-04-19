@@ -1,20 +1,6 @@
 package termux
 
-import (
-	"encoding/json"
-	"errors"
-)
-
-var (
-	// ErrBadLocationRequest is returned if request param is not (once|last|updates)
-	ErrBadLocationRequest = errors.New("Bad Location `request` parameter")
-
-	// ErrBadLocationProvider is returned if provider param is not (gps|network|passive)
-	ErrBadLocationProvider = errors.New("Bad Location `provider` parameter")
-
-	// ErrUpdatesNotSupportedYet is returned for "updates" because it's not supported yet.
-	ErrUpdatesNotSupportedYet = errors.New("'updates' mode not yet supported")
-)
+import "encoding/json"
 
 // LocationResponse is the JSON returned by the termux-location tool
 type LocationResponse struct {

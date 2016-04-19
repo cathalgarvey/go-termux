@@ -1,14 +1,6 @@
 package termux
 
-import (
-	"errors"
-	"io"
-)
-
-var (
-	// ErrBadShareAction is returned if 'action' is a bad value
-	ErrBadShareAction = errors.New("Bad share action; must be (edit|send|view)")
-)
+import "io"
 
 // Share sends a file using a share dialog or default share action
 func Share(title, action, contentType string, defaultAction bool, content io.Reader) error {

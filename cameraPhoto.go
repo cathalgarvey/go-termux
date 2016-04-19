@@ -1,14 +1,6 @@
 package termux
 
-import (
-	"encoding/json"
-	"errors"
-)
-
-var (
-	// ErrNoCameraSpecified is returned if cameraID is blank.
-	ErrNoCameraSpecified = errors.New("Must specify a camera ID")
-)
+import "encoding/json"
 
 // CameraPhoto takes a photo from the specified camera and saves to outputFN.
 // Size is undocumented in termux-api but appears to select a dimension value.
@@ -61,9 +53,6 @@ func cameraInfo(execF toolExecFunc) ([]CameraInfoResponse, error) {
 	ciBytes, err := execF(nil, "CameraInfo")
 	if err != nil {
 		return nil, err
-	}
-	if len(ciBytes) == 0 {
-		return nil, ErrZeroLengthResponse
 	}
 	err = json.Unmarshal(ciBytes, &resp)
 	if err != nil {

@@ -3,14 +3,8 @@ package termux
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"strconv"
 	"time"
-)
-
-var (
-	// ErrNoRecipientNumber is returned if the number string is empty
-	ErrNoRecipientNumber = errors.New("No recipient number specified for SMS")
 )
 
 // SMS is an SMS message from SmsInbox

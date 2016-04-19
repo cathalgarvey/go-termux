@@ -1,12 +1,5 @@
 package termux
 
-import "errors"
-
-var (
-	// ErrNoURLSpecified is returned if URL=="" in Download
-	ErrNoURLSpecified = errors.New("No URL specified for download")
-)
-
 // Download issues a download using the system download manager; i.e. with a
 // title and description in the status bar.
 func Download(URL, title, description string) error {

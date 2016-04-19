@@ -22,9 +22,6 @@ func batteryStatus(execF toolExecFunc) (*BatteryStatusResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(bsrBytes) == 0 {
-		return nil, ErrZeroLengthResponse
-	}
 	err = json.Unmarshal(bsrBytes, &resp)
 	if err != nil {
 		return nil, err

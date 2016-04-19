@@ -1,12 +1,5 @@
 package termux
 
-import "errors"
-
-var (
-	// ErrNoNotificationArgsProvided is returned if neither title or content is given
-	ErrNoNotificationArgsProvided = errors.New("Either title or content must be provided")
-)
-
 // Notification posts a notification to the system tray
 func Notification(title, content, id, uri string) error {
 	return notification(toolExec, title, content, id, uri)
